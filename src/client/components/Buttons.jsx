@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const Buttons = () => {
+const Buttons = ({ onSelectButton }) => {
 
   const [alphabet, setAlphabet] = useState('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''))
   const [buttonSelected, setButtonSelected] = useState([])
@@ -8,6 +8,7 @@ const Buttons = () => {
   const handleLetters = (selection) => {
     setAlphabet(alphabet.filter((letter) => letter !== selection))
     setButtonSelected([...buttonSelected, selection].join(' '))
+    onSelectButton(selection)
   }
 
 
@@ -18,7 +19,7 @@ const Buttons = () => {
         <button key={index} onClick={() => handleLetters(letter)}>{letter}</button>
       ))}
       <div>
-        <h3>Selected Letters</h3>
+        <h3>Used Letters</h3>
         <p>{buttonSelected}</p>
       </div>
     </div >
