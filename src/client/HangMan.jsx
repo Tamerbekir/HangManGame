@@ -24,7 +24,7 @@ const HangMan = () => {
 
 
   const handleSubmitWord = () => {
-    const wordWithUnderscore = userWordPick.userWord.split('');
+    const wordWithUnderscore = userWordPick.userWord.split('')
     const word = wordWithUnderscore.map((characters, index) => {
       if (characters === ' ') {
         return <span key={index} style={{ wordSpacing: '1px' }}>&#12288;</span>
@@ -39,7 +39,7 @@ const HangMan = () => {
   const handleSelectedLetter = (letter) => {
     setSelectedLetter([...selectedLetter, letter])
     const revealWord = userWordPick.userWord.split('').map((character, index) => {
-      if (character === letter) {
+      if (character.toUpperCase() === letter.toUpperCase()) {
         return character
       }
       return underScoreWord[index]
