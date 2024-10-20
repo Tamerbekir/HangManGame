@@ -1,5 +1,6 @@
 import Buttons from './components/Buttons'
 import { useState } from 'react'
+import '../App.css'
 
 
 const HangMan = () => {
@@ -21,26 +22,24 @@ const HangMan = () => {
     })
   }
 
+
   const handleSubmitWord = () => {
+    const wordWithUnderscore = userWordPick.userWord.split('');
 
-    const wordWithUnderscore = userWordPick.userWord.split('')
-    let word = ''
-    // console.log(wordWithUnderscore)
-
-    for (let i = 0; i < wordWithUnderscore.length; i++) {
-      if (wordWithUnderscore[i] === ' ') {
-        word += ' '
+    const word = wordWithUnderscore.map((characters, index) => {
+      if (characters === ' ') {
+        return <span key={index} style={{ wordSpacing: '1px' }}>&#12288;</span>
       } else {
-        word += '_  '
+        return <span key={index} style={{ fontSize: '40px' }}> _ </span>
       }
-
-
-    }
+    })
 
     setUnderScoreWord(word)
 
     setGameStarted(true)
   }
+
+
 
 
 
