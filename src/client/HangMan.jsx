@@ -13,6 +13,62 @@ const HangMan = () => {
   const [gameStarted, setGameStarted] = useState(false)
   const [selectedLetter, setSelectedLetter] = useState([])
 
+  const [wrongGuess, setWrongGuess] = useState(0)
+  const [showBodyPart, setShowBodyPart] = useState([])
+
+const bodyPart = [
+    `
+    +---+
+    |   |
+    O   |
+        |
+        |
+        |
+    =========`,
+    `
+    +---+
+    |   |
+    O   |
+    |   |
+        |
+        |
+    =========`,
+    `
+    +---+
+    |   |
+    O   |
+   /|   |
+        |
+        |
+    =========`,
+    `
+    +---+
+    |   |
+    O   |
+   /|\\  |
+        |
+        |
+    =========`,
+    `
+    +---+
+    |   |
+    O   |
+   /|\\  |
+   /    |
+        |
+    =========`,
+    `
+    +---+
+    |   |
+    O   |
+   /|\\  |
+   / \\  |
+        |
+    =========`,
+  ]
+
+  // console.log(bodyPart)
+
 
   const handleWordChange = (event) => {
     const { name, value } = event.target;
@@ -38,80 +94,67 @@ const HangMan = () => {
 
   const handleSelectedLetter = (letter) => {
     setSelectedLetter([...selectedLetter, letter])
-    const revealWord = userWordPick.userWord.split('').map((character, index) => {
+    const splitWord = userWordPick.userWord.split('')
+    let correctGuess = false
+
+    const revealWord = splitWord.map((character, index) => {
       if (character.toUpperCase() === letter.toUpperCase()) {
+        correctGuess = true
         return character
-      }
+      } 
       return underScoreWord[index]
     })
 
+    if (!correctGuess) {
+      setWrongGuess(wrongGuess+1)
+      setShowBodyPart(bodyPart.slice(0,wrongGuess+1))
+    }
+
     const convertLetters = revealWord.map((character, index) => (
-      <span key={index}>{character}</span>
-    ))
+        <span key={index}>{character}</span>)
+    )
 
     setUnderScoreWord(convertLetters)
   }
+
+  // const handleWrongLetter = (letter) => {
+  //   setSelectedLetter({...selectedLetter, letter})
+  //   const splitWord = userWordPick.userWord.split('')
+  //   const wrongLetter = splitWord.map((character, index) => {
+  //     if(character.toUpperCase() != letter.toUpperCase()) {
+  //       setLeftArm()
+  //     }
+  //     return underScoreWord([index])
+  //   })
+
+  //   const converWrongLetter = wrongLetter.map((character, index) => (
+  //     <span key={index}>{character}</span>
+  //   ))
+
+  //   setWrongLetter(converWrongLetter)
+  // }
 
   const resetGame = () => {
     alert('Your game has been restarted.')
     window.location = '/'
   }
 
-  console.log(`
-        + --- +
-  |   |
-      |
-      |
-      |
-      |
-=========
-  +---+
-  |   |
-  O   |
-      |
-      |
-      |
-=========
-  +---+
-  |   |
-  O   |
-  |   |
-      |
-      |
-=========
-  +---+
-  |   |
-  O   |
- /|   |
-      |
-      |
-=========
-  +---+
-  |   |
-  O   |
- /|\  |
-      |
-      |
-=========
-  +---+
-  |   |
-  O   |
- /|\  |
- /    |
-      |
-=========
-  +---+
-  |   |
-  O   |
- /|\  |
- / \  |
-      |
-=========`)
-
   return (
     <div>
       <div className='buttonsDiv'>
         <Buttons onSelectButton={handleSelectedLetter} />
+
+        {wrongGuess > 0 && (
+          <pre style={{whiteSpace: 'pre'}}>  
+        {showBodyPart[wrongGuess - 1]}
+        </pre>
+        )}
+        {wrongGuess >= 7 && (
+          <p>YOU LOSE! The correct word was " {userWordPick.userWord} "</p>
+        )}
+        {underScoreWord === 0 && (
+          <p>Good job</p>
+        )}
       </div>
       <div>
         {!gameStarted && (
