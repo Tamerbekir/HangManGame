@@ -1,9 +1,40 @@
 import Buttons from './components/Buttons'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { io } from 'socket.io-client';
 import '../App.css'
 
 
 const HangMan = () => {
+
+  const socket = io('http://localhost:4000')
+
+  useEffect(() => {
+    socket.on('gameStart', ({ wordWithUnderscore }) => {
+      setUnderScoreWord(wordWithUnderscore);
+      setGameStarted(true);
+    });
+
+    socket.on('updateWord', ({ updatedWord, wrongGuessCount, bodyParts }) => {
+      setUnderScoreWord(updatedWord);
+      setWrongGuess(wrongGuessCount);
+      setShowBodyPart(bodyParts);
+    });
+
+    socket.on('resetGame', () => {
+      setUserWordPick({ userWord: '' });
+      setUnderScoreWord('');
+      setGameStarted(false);
+      setSelectedLetter([]);
+      setWrongGuess(0);
+      setShowBodyPart([]);
+    });
+
+    return () => {
+      socket.off('gameStart');
+      socket.off('updateWord');
+      socket.off('resetGame');
+    };
+  }, []);
 
   const [userWordPick, setUserWordPick] = useState({
     userWord: ''
@@ -17,7 +48,7 @@ const HangMan = () => {
   const [showBodyPart, setShowBodyPart] = useState([])
 
   const bodyPart = [
-      `
+    `
       +---+
       |   |
       O   |
@@ -25,7 +56,7 @@ const HangMan = () => {
           |
           |
       =========`,
-      `
+    `
       +---+
       |   |
       O   |
@@ -33,7 +64,7 @@ const HangMan = () => {
           |
           |
       =========`,
-      `
+    `
       +---+
       |   |
       O   |
@@ -41,7 +72,7 @@ const HangMan = () => {
           |
           |
       =========`,
-      `
+    `
       +---+
       |   |
       O   |
@@ -49,7 +80,7 @@ const HangMan = () => {
           |
           |
       =========`,
-      `
+    `
       +---+
       |   |
       O   |
@@ -57,7 +88,7 @@ const HangMan = () => {
     /    |
           |
       =========`,
-      `
+    `
       +---+
       |   |
       O   |
@@ -65,9 +96,8 @@ const HangMan = () => {
     / \\  |
           |
       =========`,
-    ]
+  ]
 
-  // console.log(bodyPart)
 
 
   const handleWordChange = (event) => {
@@ -88,6 +118,7 @@ const HangMan = () => {
         return <span key={index} style={{ fontSize: '40px' }}> _ </span>
       }
     })
+    socket.emit('setWord', { userWord: userWordPick.userWord, wordWithUnderscore });
     setUnderScoreWord(word)
     setGameStarted(true)
   }
@@ -101,41 +132,33 @@ const HangMan = () => {
       if (character.toUpperCase() === letter.toUpperCase()) {
         correctGuess = true
         return character
-      } 
+      }
       return underScoreWord[index]
     })
 
     if (!correctGuess) {
-      setWrongGuess(wrongGuess+1)
-      setShowBodyPart(bodyPart.slice(0,wrongGuess+1))
+      setWrongGuess(wrongGuess + 1)
+      setShowBodyPart(bodyPart.slice(0, wrongGuess + 1))
     }
 
     const convertLetters = revealWord.map((character, index) => (
-        <span key={index}>{character}</span>)
+      <span key={index}>{character}</span>)
     )
 
     setUnderScoreWord(convertLetters)
+
+    socket.emit('makeGuess', {
+      letter: letter,
+      wrongGuess: wrongGuess,
+      underScoreWord: convertLetters
+    });
   }
 
-  // const handleWrongLetter = (letter) => {
-  //   setSelectedLetter({...selectedLetter, letter})
-  //   const splitWord = userWordPick.userWord.split('')
-  //   const wrongLetter = splitWord.map((character, index) => {
-  //     if(character.toUpperCase() != letter.toUpperCase()) {
-  //       setLeftArm()
-  //     }
-  //     return underScoreWord([index])
-  //   })
 
-  //   const converWrongLetter = wrongLetter.map((character, index) => (
-  //     <span key={index}>{character}</span>
-  //   ))
-
-  //   setWrongLetter(converWrongLetter)
-  // }
 
   const resetGame = () => {
     alert('Your game has been restarted.')
+    socket.emit('resetGame')
     window.location = '/'
   }
 
@@ -145,9 +168,9 @@ const HangMan = () => {
         <Buttons onSelectButton={handleSelectedLetter} />
 
         {wrongGuess > 0 && (
-          <pre style={{whiteSpace: 'pre'}}>  
-        {showBodyPart[wrongGuess - 1]}
-        </pre>
+          <pre style={{ whiteSpace: 'pre' }}>
+            {showBodyPart[wrongGuess - 1]}
+          </pre>
         )}
         {wrongGuess >= 7 && (
           <p>YOU LOSE! The correct word was " {userWordPick.userWord} "</p>
